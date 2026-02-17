@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>프로에이 시청실</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #111111;
+      --card: #171717;
+      --accent: #9C231C;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 90% -20%, #2b2b2b 0%, transparent 65%),
+        linear-gradient(140deg, #080808 0%, #101010 40%, #171717 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(1200px, 100%);
+      display: grid;
+      gap: 16px;
+    }
+
+    .top-labels {
+      position: fixed;
+      top: 14px;
+      left: 18px;
+      right: 18px;
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+      font-family: "Courier Prime", "Courier New", monospace;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      font-size: 14px;
+    }
+
+    .top-left {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .megaphone-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .megaphone-btn {
+      width: 22px;
+      height: 22px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #ffffff;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .megaphone-img {
+      width: 16px;
+      height: 16px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .megaphone-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tweet-popover {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      width: min(420px, calc(100vw - 36px));
+      max-height: min(78vh, 640px);
+      overflow: auto;
+      display: none;
+      background: #0f0f0f;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+      z-index: 40;
+    }
+
+    .megaphone-wrap:hover .tweet-popover,
+    .megaphone-wrap:focus-within .tweet-popover {
+      display: block;
+    }
+
+    .tweet-popover .twitter-tweet {
+      margin: 0 auto !important;
+    }
+
+    .center-tweet-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .center-tweet-overlay.show {
+      display: flex;
+    }
+
+    .center-tweet-card {
+      position: relative;
+      width: min(560px, 100%);
+      max-height: min(82vh, 760px);
+      overflow: auto;
+      background: #0f0f0f;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      padding: 14px 14px 10px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .center-tweet-card .twitter-tweet {
+      margin: 0 auto !important;
+    }
+
+    .top-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9C231C;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .top-labels .accent-a {
+      color: #9C231C;
+    }
+
+    .main-panel {
+      background: color-mix(in oklab, var(--card) 88%, black 12%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .main-player-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .thumb {
+      background: color-mix(in oklab, var(--card) 95%, black 5%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 140ms ease, border-color 140ms ease;
+    }
+
+    .thumb:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in oklab, var(--accent) 60%, white 40%);
+    }
+
+    .thumb.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 60%, black 40%) inset;
+    }
+
+    .thumb-player-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      position: relative;
+    }
+
+    .thumb-player-wrap iframe {
+      pointer-events: none !important;
+    }
+
+    .thumb-hit {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      border: 0;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 3;
+      background: #dc2626;
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+      display: none;
+      pointer-events: none;
+    }
+
+    .status-badge.show { display: inline-flex; }
+
+    .meta {
+      padding: 8px 10px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: rgba(156, 35, 28, 0.25);
+      color: #fecaca;
+      opacity: 0;
+      transition: opacity 140ms ease;
+    }
+
+    .thumb.active .badge { opacity: 1; }
+
+    .help {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .notice {
+      display: none;
+      margin-top: 8px;
+      border: 1px solid rgba(249, 115, 22, 0.45);
+      background: rgba(249, 115, 22, 0.12);
+      color: #fed7aa;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .notice.show { display: block; }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    @media (max-width: 1000px) {
+      .thumb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .thumb-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-labels">
+    <div class="top-left">
+      <span class="megaphone-wrap">
+        <button class="megaphone-btn" type="button" aria-label="SKOSHISM 트윗 보기"><img class="megaphone-img" src="https://i.imgur.com/aBOsWOl.png" alt="" aria-hidden="true" /></button>
+        <div class="tweet-popover">
+          <blockquote class="twitter-tweet" data-theme="dark">
+            <a href="https://twitter.com/SKOSHISM/status/1853006063634878827"></a>
+          </blockquote>
+        </div>
+      </span>
+      <span>SKOSHISM</span>
+    </div>
+    <span class="top-right"><span class="top-dot"></span>PROJECT : <span class="accent-a">A</span>(LIVE)</span>
+  </div>
+
+  <div class="app">
+    <section class="main-panel">
+      <div class="main-player-wrap" id="main-player"></div>
+    </section>
+
+    <section class="thumb-grid" id="thumb-grid"></section>
+
+    <p class="notice" id="protocol-notice">
+      이 페이지를 <code>file://</code>로 열면 YouTube 오류 153이 발생할 수 있습니다.
+      <code>http://localhost</code> 같은 로컬 서버로 실행하세요.
+    </p>
+
+  </div>
+
+  <div class="center-tweet-overlay" id="end-tweet-overlay" aria-hidden="true">
+    <div class="center-tweet-card">
+      <blockquote class="twitter-tweet" data-theme="dark">
+        <a href="https://twitter.com/SKOSHISM/status/1853087722107510815"></a>
+      </blockquote>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <script>
+    const videos = [
+      { id: "E36di48DiR8", title: "니노 시점", offsetSec: 280 }, // +4:40
+      { id: "pBXgzODYrgU", title: "코요 시점", offsetSec: 264 }, // +4:24
+      { id: "F7wbG0BPEQg", title: "오토 시점", offsetSec: 270 }, // +4:30
+      { id: "M2PoVLutE84", title: "이로 시점", offsetSec: 177 }, // +2:57
+      { id: "e1eLZAqLwhM", title: "로보 시점", offsetSec: 0 }    // +0:00
+    ];
+
+    let mainPlayer = null;
+    let activeIndex = 1;
+    let suppressStateHandler = false;
+    let syncTimer = null;
+    let thirdEndTweetShown = false;
+    let thirdPrevTimeSec = NaN;
+    let thirdPrevDurationSec = NaN;
+    const SYNC_INTERVAL_MS = 1500;
+    const SYNC_TOLERANCE_SEC = 1.2;
+
+    const thumbCards = [];
+    const thumbPlayers = [];
+    const statusBadges = [];
+    const statusRules = [
+      [
+        { from: 15613, label: "감염" }, // 4:20:13
+        { from: 16144, label: "사망" }  // 4:29:04
+      ],
+      [
+        { from: 1667, label: "감염" },  // 27:47
+        { from: 6002, label: "사망" }   // 1:40:02
+      ],
+      [
+        { from: 17311, label: "감염" }, // 4:48:31
+        { from: 17338, label: "사망" }  // 4:48:58
+      ],
+      [
+        { from: 3005, to: 4034, label: "라이브 오류" },   // 50:05 ~ 1:07:14
+        { from: 6194, to: 13052, label: "감염" },        // 1:43:14 ~ 3:37:32
+        { from: 17090, label: "사망" }                    // 4:44:50
+      ],
+      [
+        { from: 8269, label: "사망" }   // 2:17:49
+      ]
+    ];
+    const isFileProtocol = window.location.protocol === "file:";
+    const playerOrigin = isFileProtocol ? null : window.location.origin;
+
+    if (isFileProtocol) {
+      document.getElementById("protocol-notice").classList.add("show");
+    }
+
+    function buildPlayerVars(extra = {}) {
+      const base = {
+        playsinline: 1,
+        rel: 0,
+        modestbranding: 1
+      };
+      if (playerOrigin) base.origin = playerOrigin;
+      return { ...base, ...extra };
+    }
+
+    function getOffsetSeconds(index) {
+      return videos[index]?.offsetSec ?? 0;
+    }
+
+    function getSharedTimelineSeconds() {
+      if (!mainPlayer?.getCurrentTime) return 0;
+      return Math.max(0, mainPlayer.getCurrentTime() - getOffsetSeconds(activeIndex));
+    }
+
+    function getStartForIndex(index, sharedSeconds) {
+      return Math.max(0, sharedSeconds + getOffsetSeconds(index));
+    }
+
+    function syncThumbPlayersToSharedTime(force = false) {
+      if (!mainPlayer?.getCurrentTime) return;
+      const sharedSeconds = getSharedTimelineSeconds();
+
+      thumbPlayers.forEach((player, index) => {
+        if (!player?.getCurrentTime || !player?.seekTo) return;
+
+        const target = getStartForIndex(index, sharedSeconds);
+        const current = player.getCurrentTime();
+        if (!Number.isFinite(current)) return;
+
+        if (force || Math.abs(current - target) > SYNC_TOLERANCE_SEC) {
+          player.seekTo(target, true);
+        }
+      });
+
+      updateStatusBadges(sharedSeconds);
+      maybeShowThirdEndTweet();
+    }
+
+    function startThumbSyncLoop() {
+      if (syncTimer) return;
+      syncTimer = setInterval(() => {
+        syncThumbPlayersToSharedTime(false);
+      }, SYNC_INTERVAL_MS);
+    }
+
+    function stopThumbSyncLoop() {
+      if (!syncTimer) return;
+      clearInterval(syncTimer);
+      syncTimer = null;
+    }
+
+    function resolveStatusForVideo(index, sec) {
+      const rules = statusRules[index] || [];
+      let matched = null;
+
+      rules.forEach((rule) => {
+        const inRange = rule.to != null
+          ? sec >= rule.from && sec <= rule.to
+          : sec >= rule.from;
+        if (inRange) matched = rule.label;
+      });
+
+      return matched;
+    }
+
+    function updateStatusBadges(sharedSeconds = getSharedTimelineSeconds()) {
+      const thirdVideoSec = thumbPlayers[2]?.getCurrentTime ? thumbPlayers[2].getCurrentTime() : NaN;
+      const isFourthDeathByThirdTime = Number.isFinite(thirdVideoSec) && thirdVideoSec >= 17285; // 4:48:05
+
+      thumbPlayers.forEach((player, index) => {
+        const badge = statusBadges[index];
+        if (!badge) return;
+
+        const sec = player?.getCurrentTime ? player.getCurrentTime() : NaN;
+        if (!Number.isFinite(sec) || sec < 0) {
+          badge.classList.remove("show");
+          badge.textContent = "";
+          return;
+        }
+
+        let label = resolveStatusForVideo(index, sec);
+        if (index === 3 && label === "사망") {
+          label = null;
+        }
+        if (index === 3 && isFourthDeathByThirdTime) {
+          label = "사망";
+        }
+
+        const duration = player?.getDuration ? player.getDuration() : NaN;
+        const canCheckDuration = Number.isFinite(duration) && duration > 0;
+        const neededTime = getStartForIndex(index, sharedSeconds);
+        const overflowDeath = canCheckDuration && neededTime >= (duration - 0.25);
+        if (overflowDeath && index !== 3) {
+          label = "사망";
+        }
+
+        if (label) {
+          badge.textContent = label;
+          badge.classList.add("show");
+          return;
+        }
+
+        badge.classList.remove("show");
+        badge.textContent = "";
+      });
+    }
+
+    function renderThumbSlots() {
+      const grid = document.getElementById("thumb-grid");
+      videos.forEach((video, index) => {
+        const card = document.createElement("article");
+        card.className = `thumb ${index === activeIndex ? "active" : ""}`;
+        card.dataset.index = String(index);
+
+        card.innerHTML = `
+          <div class="thumb-player-wrap">
+            <div id="thumb-player-${index}"></div>
+            <span class="status-badge"></span>
+            <button class="thumb-hit" type="button" aria-label="${video.title} 메인으로 보기"></button>
+          </div>
+          <div class="meta">
+            <span>${video.title}</span>
+            <span class="badge">시청중</span>
+          </div>
+        `;
+
+        card.querySelector(".thumb-hit").addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          switchMain(index);
+        });
+        statusBadges[index] = card.querySelector(".status-badge");
+        card.addEventListener("click", () => switchMain(index));
+        grid.appendChild(card);
+        thumbCards.push(card);
+      });
+    }
+
+    function onYouTubeIframeAPIReady() {
+      renderThumbSlots();
+
+      mainPlayer = new YT.Player("main-player", {
+        videoId: videos[activeIndex].id,
+        playerVars: buildPlayerVars({
+          autoplay: 1,
+          controls: 1
+        }),
+        events: {
+          onReady: (e) => {
+            const initialStart = getStartForIndex(activeIndex, 0);
+            if (initialStart > 0) e.target.seekTo(initialStart, true);
+            e.target.unMute();
+            e.target.playVideo();
+            startThumbSyncLoop();
+            updateStatusBadges();
+          },
+          onStateChange: handleMainStateChange
+        }
+      });
+
+      videos.forEach((video, index) => {
+        const thumbPlayer = new YT.Player(`thumb-player-${index}`, {
+          videoId: video.id,
+          playerVars: buildPlayerVars({
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            loop: 1,
+            playlist: video.id
+          }),
+          events: {
+            onReady: (e) => {
+              const initialStart = getStartForIndex(index, 0);
+              if (initialStart > 0) e.target.seekTo(initialStart, true);
+              e.target.mute();
+              e.target.playVideo();
+              updateStatusBadges();
+            },
+            onStateChange: (e) => {
+              if (index === 2 && e.data === YT.PlayerState.ENDED) {
+                showThirdEndTweetOverlay();
+              }
+            }
+          }
+        });
+
+        thumbPlayers[index] = thumbPlayer;
+      });
+    }
+
+    function switchMain(index) {
+      if (index === activeIndex || !mainPlayer) return;
+      const sharedSeconds = getSharedTimelineSeconds();
+      const startSeconds = getStartForIndex(index, sharedSeconds);
+      activeIndex = index;
+      updateThumbActiveUI();
+
+      suppressStateHandler = true;
+      mainPlayer.loadVideoById({
+        videoId: videos[index].id,
+        startSeconds: Number.isFinite(startSeconds) ? startSeconds : 0
+      });
+      mainPlayer.unMute();
+      mainPlayer.playVideo();
+      setTimeout(() => syncThumbPlayersToSharedTime(true), 500);
+      setTimeout(() => { suppressStateHandler = false; }, 200);
+    }
+
+    function handleMainStateChange(event) {
+      if (suppressStateHandler) return;
+
+      if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+        stopThumbSyncLoop();
+        pauseAllPlayers();
+      }
+
+      if (event.data === YT.PlayerState.PLAYING) {
+        startThumbSyncLoop();
+        resumeAllThumbs();
+        syncThumbPlayersToSharedTime(true);
+      }
+    }
+
+    function pauseAllPlayers() {
+      stopThumbSyncLoop();
+      if (mainPlayer?.pauseVideo) {
+        suppressStateHandler = true;
+        mainPlayer.pauseVideo();
+        setTimeout(() => { suppressStateHandler = false; }, 150);
+      }
+      thumbPlayers.forEach((p) => p?.pauseVideo && p.pauseVideo());
+    }
+
+    function resumeAllThumbs() {
+      thumbPlayers.forEach((p) => {
+        if (!p?.playVideo) return;
+        p.mute();
+        p.playVideo();
+      });
+      syncThumbPlayersToSharedTime(true);
+    }
+
+    function updateThumbActiveUI() {
+      thumbCards.forEach((card, idx) => {
+        card.classList.toggle("active", idx === activeIndex);
+      });
+    }
+
+    function showThirdEndTweetOverlay() {
+      if (thirdEndTweetShown) return;
+      thirdEndTweetShown = true;
+
+      const overlay = document.getElementById("end-tweet-overlay");
+      if (!overlay) return;
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden", "false");
+
+      if (window.twttr?.widgets?.load) {
+        window.twttr.widgets.load(overlay);
+      }
+    }
+
+    function maybeShowThirdEndTweet() {
+      if (thirdEndTweetShown) return;
+      const third = thumbPlayers[2];
+      if (!third?.getCurrentTime || !third?.getDuration) return;
+
+      const current = third.getCurrentTime();
+      const duration = third.getDuration();
+      if (!Number.isFinite(current) || !Number.isFinite(duration) || duration <= 0) {
+        return;
+      }
+
+      const nearEnd = current >= duration - 0.8;
+      const sharedSeconds = getSharedTimelineSeconds();
+      const targetByShared = getStartForIndex(2, sharedSeconds);
+      const reachedByShared = targetByShared >= duration - 0.8;
+      const wrappedAfterNearEnd =
+        Number.isFinite(thirdPrevTimeSec) &&
+        Number.isFinite(thirdPrevDurationSec) &&
+        thirdPrevDurationSec > 0 &&
+        thirdPrevTimeSec >= thirdPrevDurationSec - 2.5 &&
+        current <= 1.5;
+
+      thirdPrevTimeSec = current;
+      thirdPrevDurationSec = duration;
+
+      if (nearEnd || wrappedAfterNearEnd || reachedByShared) {
+        showThirdEndTweetOverlay();
+      }
+    }
+
+    function setupTweetPopover() {
+      const wrap = document.querySelector(".megaphone-wrap");
+      const popover = document.querySelector(".tweet-popover");
+      if (!wrap || !popover) return;
+
+      let loaded = false;
+      const loadTweet = () => {
+        if (loaded) return;
+        if (!window.twttr?.widgets?.load) return;
+        window.twttr.widgets.load(popover);
+        loaded = true;
+      };
+
+      wrap.addEventListener("mouseenter", loadTweet, { passive: true });
+      wrap.addEventListener("focusin", loadTweet);
+      window.addEventListener("load", loadTweet, { once: true });
+    }
+
+    function setupCenterTweetOverlay() {
+      const overlay = document.getElementById("end-tweet-overlay");
+      if (!overlay) return;
+
+      overlay.addEventListener("click", (e) => {
+        if (e.target !== overlay) return;
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+      });
+    }
+
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+    setupTweetPopover();
+    setupCenterTweetOverlay();
+  </script>
+</body>
+</html>
